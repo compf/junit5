@@ -66,30 +66,15 @@ class LifecycleMethodExecutionExceptionHandlerTests extends AbstractJupiterTestE
 		throwExceptionAfterAll = true;
 		handlerCalls.clear();
 
-		SwallowExceptionHandler.beforeAllCalls = 0;
-		SwallowExceptionHandler.beforeEachCalls = 0;
-		SwallowExceptionHandler.afterEachCalls = 0;
-		SwallowExceptionHandler.afterAllCalls = 0;
+		SwallowExceptionHandler.callCounter.reset();
 
-		RethrowExceptionHandler.beforeAllCalls = 0;
-		RethrowExceptionHandler.beforeEachCalls = 0;
-		RethrowExceptionHandler.afterEachCalls = 0;
-		RethrowExceptionHandler.afterAllCalls = 0;
+		RethrowExceptionHandler.callCounter.reset();
 
-		ConvertExceptionHandler.beforeAllCalls = 0;
-		ConvertExceptionHandler.beforeEachCalls = 0;
-		ConvertExceptionHandler.afterEachCalls = 0;
-		ConvertExceptionHandler.afterAllCalls = 0;
+		ConvertExceptionHandler.callCounter.reset();
 
-		UnrecoverableExceptionHandler.beforeAllCalls = 0;
-		UnrecoverableExceptionHandler.beforeEachCalls = 0;
-		UnrecoverableExceptionHandler.afterEachCalls = 0;
-		UnrecoverableExceptionHandler.afterAllCalls = 0;
+		UnrecoverableExceptionHandler.callCounter.reset();
 
-		ShouldNotBeCalledHandler.beforeAllCalls = 0;
-		ShouldNotBeCalledHandler.beforeEachCalls = 0;
-		ShouldNotBeCalledHandler.afterEachCalls = 0;
-		ShouldNotBeCalledHandler.afterAllCalls = 0;
+		ShouldNotBeCalledHandler.callCounter.reset();
 	}
 
 	@Test
@@ -165,10 +150,10 @@ class LifecycleMethodExecutionExceptionHandlerTests extends AbstractJupiterTestE
 		LauncherDiscoveryRequest request = request().selectors(selectClass(SwallowingTestCase.class)).build();
 		EngineExecutionResults executionResults = executeTests(request);
 
-		assertEquals(1, SwallowExceptionHandler.beforeAllCalls, "Exception should be handled in @BeforeAll");
-		assertEquals(1, SwallowExceptionHandler.beforeEachCalls, "Exception should be handled in @BeforeEach");
-		assertEquals(1, SwallowExceptionHandler.afterEachCalls, "Exception should be handled in @AfterEach");
-		assertEquals(1, SwallowExceptionHandler.afterAllCalls, "Exception should be handled in @AfterAll");
+		assertEquals(1, SwallowExceptionHandler.callCounter.getBeforeAllCalls(), "Exception should be handled in @BeforeAll");
+		assertEquals(1, SwallowExceptionHandler.callCounter.getBeforeEachCalls(), "Exception should be handled in @BeforeEach");
+		assertEquals(1, SwallowExceptionHandler.callCounter.getAfterEachCalls(), "Exception should be handled in @AfterEach");
+		assertEquals(1, SwallowExceptionHandler.callCounter.getAfterAllCalls(), "Exception should be handled in @AfterAll");
 
 		executionResults.allEvents().assertEventsMatchExactly( //
 			event(engine(), started()), //
@@ -382,15 +367,12 @@ class LifecycleMethodExecutionExceptionHandlerTests extends AbstractJupiterTestE
 	// ------------------------------------------
 
 	static class RethrowExceptionHandler implements LifecycleMethodExecutionExceptionHandler {
-		static int beforeAllCalls = 0;
-		static int beforeEachCalls = 0;
-		static int afterEachCalls = 0;
-		static int afterAllCalls = 0;
+		static HandlerCallCounter callCounter = new HandlerCallCounter();
 
 		@Override
 		public void handleBeforeAllMethodExecutionException(ExtensionContext context, Throwable throwable)
 				throws Throwable {
-			beforeAllCalls++;
+			callCounter.incrementBeforeAllCalls();
 			handlerCalls.add("RethrowExceptionBeforeAll");
 			throw throwable;
 		}
@@ -398,7 +380,7 @@ class LifecycleMethodExecutionExceptionHandlerTests extends AbstractJupiterTestE
 		@Override
 		public void handleBeforeEachMethodExecutionException(ExtensionContext context, Throwable throwable)
 				throws Throwable {
-			beforeEachCalls++;
+			callCounter.incrementBeforeEachCalls();
 			handlerCalls.add("RethrowExceptionBeforeEach");
 			throw throwable;
 		}
@@ -406,7 +388,7 @@ class LifecycleMethodExecutionExceptionHandlerTests extends AbstractJupiterTestE
 		@Override
 		public void handleAfterEachMethodExecutionException(ExtensionContext context, Throwable throwable)
 				throws Throwable {
-			afterEachCalls++;
+			callCounter.incrementAfterEachCalls();
 			handlerCalls.add("RethrowExceptionAfterEach");
 			throw throwable;
 		}
@@ -414,7 +396,7 @@ class LifecycleMethodExecutionExceptionHandlerTests extends AbstractJupiterTestE
 		@Override
 		public void handleAfterAllMethodExecutionException(ExtensionContext context, Throwable throwable)
 				throws Throwable {
-			afterAllCalls++;
+			callCounter.incrementAfterAllCalls();
 			handlerCalls.add("RethrowExceptionAfterAll");
 			throw throwable;
 		}
